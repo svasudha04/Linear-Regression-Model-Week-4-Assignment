@@ -1,0 +1,99 @@
+---
+title: "Regression Model week-4 project"
+author: "Vasudha Singh"
+date: "December 16, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Overview/ Executive Summary
+Here we have a dataset of Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars,we are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). We are particularly interested in the following two questions:  
+
+1."Is an automatic or manual transmission better for MPG"  
+2."Quantify the MPG difference between automatic and manual transmissions"  
+
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles. 
+A data frame consists 32 observations and 11 Variables
+
+The analysis we have done, we can say that Manual Transmisson is better than Automatic transmission for MPG. the factors which included MPG can be multiple, by using regression method we can pick relatively  right variables into our model . 
+
+##Loading And Processing the Data
+```{r}
+library(ggplot2)
+library(dplyr)
+library(datasets)
+
+?mtcars
+data(mtcars)
+str(mtcars)
+summary(lm(mpg~. -1, mtcars))$coef
+
+###Converting variables to Factor
+mtcars$am<-factor(mtcars$am, labels=c("Automatic", "Manual"))
+mtcars$cyl<-factor(mtcars$cyl)
+mtcars$vs<- factor(mtcars$vs)
+mtcars$gear<-factor(mtcars$gear)
+mtcars$carb<-factor(mtcars$carb)
+```  
+
+##Exploratory Analysis  
+```{r}
+g<- ggplot(data=mtcars, aes(y=mpg, x=am, fill= am))
+g<-g +geom_boxplot()+ xlab(" Transmission Type")+ ylab(" MPG ")+ labs(title="MPG by Tramsimission Vehicles")
+g
+```  
+
+The boxplot graph shows that there is a Significant increase in MPG(miles per gallon) with in vehicles via Automatic transmission Versus Manual transmission.
+
+##Inference
+```{r}
+t_test<- t.test(mpg ~ am, mtcars)
+t_test
+```  
+From the result we can say that, t_test **Reject** the **Null hypothesis** that there is a difference between transmission mean is equal to 0. i.e(p_value=0.001374)  
+
+And, the difference between the estimates of the two transmission is **7.245** MPG(miles per gallon), which tells the **Manual Transmission Vehicles** is **better** than Automatic Transmission Vehicles.  
+
+##Regression Analysis  
+###Fit the linear regression model for the Whole data.  
+
+```{r}
+fit<- lm(mpg~. , mtcars)
+summary(fit)$coeff
+pairs(mpg~. ,panel= panel.smooth, main="Mtcars Data", col=4, mtcars)
+```    
+
+In this, we notice that none of the coefficient of the variables have p-value is less than 0.05, so we cannot say that there is which variable is Statistically Significant.To observe the intial relationship between the variables we plot  scatterplot by plotting each variables against all other variables which tells the correlation between them.
+
+###fitting the best model 
+```{r}
+bestmodel<- step(fit, direction="both")
+summary(bestmodel)$coeff
+confint(bestmodel,"amManual", level=0.95)
+```    
+
+In this model we can see, the bestmodel consists **4** variables(Cylinder, horsepower, weight, transmission) with R-squared value of **0.8659** which tells that best model consists the **87%** variance in MPG. in this also we have a P-Value which is statistically significant.
+The coefficient concluded that increasing a number of cylinder to 6 with decrease the MPG by **3.03** , increasing the number of cylinders from 6 to 8 define the decreases the MPG  by **2.16** . 
+Increases the horse power decreases the MPG by **3.21** per 100 horsepower. Weight decreases the MPG by **2.49** . Mannual transmission improves the MPG by  **1.81**  than Automatic transmission.    
+
+##Residual Plots and Diagnostics
+```{r}
+par(mfrow=c(2,2))
+plot(bestmodel, pch=16, lty=1, lwd=2)
+```  
+
+1. Randomness of Residuals and  fitted plot support the assumption of randomness.
+2. The Normal Q-Q plot  tells the distribution of residuals is normal.
+3. Scale location plots tells the constant variance assumption.
+4. The REsidual leverage plots tells that there is **no outliers** present.  
+ these models tells that there is no Hetroscadisticty.
+
+##Conclusion  
+From the above analysis we can answer the above questions that,  
+1. Manual Transmisson Vehicles is better than Automatic Transmission Vehicles.  
+
+2. The result of multi variate  model suggest that fuel efficeincyis 2.94 MPG higher for Manual     over Automatic Transmission Vehicles.
